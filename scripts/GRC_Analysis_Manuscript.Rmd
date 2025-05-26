@@ -1,0 +1,328 @@
+---
+title: "GRC Sierra Leone & Guinea Analysis Manuscript"
+author: "Muhammed Bah"    
+date: "September 2024"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(devtools)
+library(slickR)
+```
+
+###  **Genetic Report Cards (GRCs)**
+The Genetic Report Cards (GRCs) are comprehensive datasets that provide detailed genetic information about malaria parasites. These datasets are derived from blood samples collected from malaria-infected individuals. The samples undergo a series of processes:
+
+1. **Sample Collection:** Blood samples are collected from individuals infected with malaria.
+2. **Parasite Isolation:** The malaria parasites are isolated from the blood samples.
+3. **DNA Extraction:** The DNA of the malaria parasites is extracted.
+4. **Genome Sequencing:** The extracted DNA is sequenced to determine the genetic makeup of the parasites.
+5. **Data Compilation:** The genetic data is compiled into the GRCs, which include various genetic markers, mutations, and other relevant information. 
+
+The GRCs provide valuable insights into the genetic diversity, drug resistance, and transmission patterns of malaria parasites, aiding in the development of effective control strategies.
+
+
+### **Purpose of the Analysis**
+
+The primary objectives of this analysis are:
+
+* **Prevalence and Diversity:** To understand the prevalence and genetic diversity of malaria parasites in different regions.
+* **Drug Resistance:** To identify and characterize drug resistance profiles of malaria strains.
+* **Geographical Mapping:** To map the spread and relatedness of malaria strains across various locations.
+* **Genetic Relationships:** To explore the genetic relationships between samples using IBS matrices and related plots.
+
+
+### **Dataset Overview**
+
+We have Genetic Report Cards from various countries like **The Gambia**, **Sierra Leone**, **Guinea**, **Cameroon**, **Ethiopia**, **Nigeria** etc. 
+Below is an example of some columns present in the dataset:
+
+* **Sample Internal ID:** Unique identifier for each sample.
+* **ENA Accession Number:** Identifier for the sample in the European Nucleotide Archive.
+* **Sample External ID:** Another identifier, possibly from an external source or study.
+* **Date of Collection:** Date when the sample was collected.
+* **Location:** Specific location where the sample was collected.
+* **Country:** Country of sample collection.
+* **Study:** Identifier for the study the sample is part of.
+* **Species:** Species of the malaria parasite (e.g., Plasmodium falciparum).
+* **Important Genetic Markers Columns**
+  + **PfCRT:** Gene associated with chloroquine resistance.
+  + **PfDHPS:** Gene linked to sulfadoxine-pyrimethamine resistance.
+  + **80 SNPs:** Single nucleotide polymorphisms used to assess genetic diversity and relatedness among samples.
+
+
+### **Analysis Steps**
+
+This analysis was conducted using R, with R Markdown utilized to document the steps in code blocks. Packages such as dplyr and ggplot2 were used for data manipulation and visualization.
+
+1. **Clean the Data:** Filter for samples that contain the Plasmodium falciparum specie.
+2. **Classify Samples by Drug Resistance:** Create a function to classify samples as: 
+   + **Resistant**: Samples with haplotypes containing mutations that correspond to chloroquine resistance, e.g., **CVIET**.   
+   + **Mixed Resistant**: Samples with haplotypes containing mixed mutations that correspond to chloroquine resistance, e.g., **CV[M/I][N/E][K/T]**.
+   + **Sensitive**: Samples with haplotypes that have no mutations and hence correspond to chloroquine sensitivity, e.g., **CVMNK**.
+   
+   After this classification, we filter out other cases such as  **undetermined** and **missing** haplotypes.
+3. **Summarize Data:** Summarize the data by location and Haplotype condition.
+4. **Generate Distribution Plots and Tables:** Create plots and tables to show the distribution of drug resistance across different locations. E.g. Pie charts, bar charts etc.
+5. **Generate Distribution maps:** Create maps using the sample count and distributions tables for the haplotype condition and mutations. E.g. Sample Count map, drug resistance map, mutation map, alle proportion map etc. 
+6. **Calculate IBS Matrix:** Compute the Identity-By-State (IBS) matrix to assess genetic similarity between samples.
+7. **Generate Connection and Cluster Plots:** After generating the IBS matrix we use it to generate varous visualizations like, Connectedness Maps, Neighbour Joining trees, heatmaps, PCoA scatter plot etc. 
+
+
+### **Descriptive Analysis & Results**
+
+For this analysis, we are going to use Genetic Report Cards from **Sierra Leone and Guinea** with focus on the **PfCRT** gene which is associated with **chloroquine** resistance. In total we have **1,074** samples and after data cleaning, we our now left with **300** samples to work with. The following plots below were produced after series analysis of the data:
+
+
+#### **Sample Count Map** 
+
+* **Description:** This map shows the number of samples collected from different locations within The Gambia.
+* **Purpose:** To visualize the geographical distribution of sample collection, which helps in understanding the prevalence of malaria in various regions.
+
+We can see below that most of our samples came from **Guinea**, with a sum of **157** samples and sum of **143** from **Sierra Leone**.
+
+```{r SmapleCountMap, echo=FALSE, message=FALSE, warning=FALSE, out.width= "50%"}
+
+knitr::include_graphics("Analysis_Folder/Chloroquine/Proportion_Maps/SampleCount_Map.jpeg")
+
+```
+
+
+#### **Drug Condition Plots**
+
+* **Description:** These plots show the distribution of drug-resistant malaria strains across different locations for Chloroquine.
+* **Purpose:** To identify locations with high drug resistance, which is crucial for targeting interventions and monitoring the effectiveness of treatment strategies.
+
+As we can see below the sensitive strain is the most dominant with a proportion of **41.33%** in our data. Taking a closer look at each location we can see how this proportions spread across each location. 
+
+```{r DrugResistancePlots, echo=FALSE, message=FALSE, warning=FALSE, out.width= "50%"}
+
+slickR(
+  c("Analysis_Folder/Chloroquine/Proportion_Maps/DrugStatus_BarChart.jpeg",
+    "Analysis_Folder/Chloroquine/Proportion_Maps/DrugStatus_PieChart.jpeg",
+    "Analysis_Folder/Chloroquine/Proportion_Maps/DrugStatus&LocationPieChart.jpeg"
+),
+  height = 500, width = "95%")
+
+# knitr::include_graphics("Analysis_Folder/Chloroquine/Proportion_Maps/DrugStatus_PieChart.jpeg")
+# knitr::include_graphics("Analysis_Folder/Chloroquine/Proportion_Maps/DrugStatus&LocationPieChart.jpeg")
+
+```
+
+
+#### **Haplotype Frequency Plots**
+
+* **Description:** These plots show the frequency of unique haplotypes in the PfCRT gene across different entire data and different locations. Each location on the map is represented by a pie chart that displays the proportion of each haplotype present.
+* **Purpose:** To understand the genetic diversity of the malaria parasite population in various regions, gain insights into the prevalence of resistant and sensitive haplotypes, and identify regions with higher frequencies of specific haplotypes. This visualization aids in analyzing genetic diversity and drug resistance patterns.
+
+Looking at our plots below we see that the haplotype, **CVMNK** is dominant across locations. This specific haplotype highly assocaited with chloroquine sensitivity which further justifies why sensitive strains are dominant in out data. 
+
+```{r HaplotypeFrequencyPlots, echo=FALSE, message=FALSE, warning=FALSE, out.width= "50%"}
+
+slickR(
+  c("Analysis_Folder/Chloroquine/Proportion_Maps/HaplotypFreq_BarChart.jpeg",
+    "Analysis_Folder/Chloroquine/Proportion_Maps/HaplotypFreqPieChart.jpeg"
+),
+  height = 500, width = "95%")
+
+# knitr::include_graphics("Analysis_Folder/Chloroquine/Proportion_Maps/HaplotypFreq_BarChart.jpeg")
+# knitr::include_graphics("Analysis_Folder/Chloroquine/Proportion_Maps/HaplotypFreqPieChart.jpeg")
+
+```
+
+
+#### **Mutation Plots**
+
+* **Description:** These plots illustrate the distribution of genetic mutations at specific positions within the PfCRT genetic marker of the malaria parasite.
+* **Purpose:** To monitor the prevalence and geographical spread of mutations associated with drug resistance.
+
+We present two plots below. The first is a bar chart depicting the mutation frequency at positions **72** to **76** across all samples. The second is a map displaying these frequencies by location. The bar chart reveals the mutations at positions **74** to **76** because it where mutations occurs most often, with position 76 being one the most famous.
+
+The second plot provides a detailed view of these mutations by location, with a focus on the **K76T** mutation. It is evident that in all locations, less than 50% of the samples exhibit a mutation at this position. This mutation is strongly associated with chloroquine resistance, and the results further corroborate our findings that a significant proportion of our samples are sensitive to chloroquine.
+
+```{r MutationFrequencyPlots, echo=FALSE, message=FALSE, warning=FALSE, out.width= "50%"}
+
+slickR(
+  c("Analysis_Folder/Chloroquine/Proportion_Maps/MutationFrequency_BarChart.jpeg",
+    "Analysis_Folder/Chloroquine/Proportion_Maps/K76T_Position.jpeg",
+    "Analysis_Folder/Chloroquine/Proportion_Maps/M74I_Position.jpeg",
+    "Analysis_Folder/Chloroquine/Proportion_Maps/N75E_Position.jpeg",
+    "Analysis_Folder/Chloroquine/Proportion_Maps/C72S_Position.jpeg",
+    "Analysis_Folder/Chloroquine/Proportion_Maps/V73S_Position.jpeg"),
+  height = 500, width = "95%")
+
+# knitr::include_graphics("Analysis_Folder/Chloroquine/Proportion_Maps/MutationFrequency_BarChart.jpeg")
+# knitr::include_graphics("Analysis_Folder/Chloroquine/Proportion_Maps/K76T_Position.jpeg")
+
+```
+
+
+### **Identity By State(IBS) Analysis**
+
+In our data we have 80 SNPs or loci. By combining the nucleotide values **(A, T, N, G, X, C)** , from these loci, we create a genetic “barcode” for each sample. This barcode is unique to each parasite strain and can be used to calculate genetic similarity or Identity-By-State (IBS) between samples. This helps in understanding the genetic relatedness and potential transmission patterns of the malaria parasites. 
+
+Before calculating IBS we filter for SNPs or loci with high missigness which is represented by value **X**. We then later filter for samples with with high missigness across all loci. For this specific analysis we decided to go with a missigness threshold of **<= 40%**. After this a matrix is  created as a result to the IBS calculation. Using this matrix we are able to construct various plots to further investigate the similarity between samples. The following plots constructed using this matrix are as follows:
+
+* **Connectedness Maps** 
+* **Neighbor Joining Tree** 
+* **Heatmap Cluster Plot** 
+* **PCoA Plot**
+
+Let's now take a closer look at each plot below: 
+
+
+#### **Heatmaps**
+
+* **Description:** This heatmap displays clusters of genetically similar parasite samples based on the IBS matrix.
+* **Purpose:** To identify and visualize groups of samples with high genetic similarity, which can indicate potential transmission clusters or common sources of infection.
+
+The heatmap below shows the genetic similarity between samples derived from the IBS matrix. A color palette ranging from red, yellow to blue indicates the level of similarity. The more blue the cell, the more similar the samples are to each other, with red indicating less similarity. The most prominent illustration on the heatmap shows that there is high similarity among many samples from Riverline and Non-Riverline
+
+```{r HeatMaps, echo=FALSE, message=FALSE, warning=FALSE, out.width= "100%"}
+
+slickR(
+  c("Analysis_Folder/Chloroquine/Heat_Maps/Clustered/ClusterAll_Heatmap.png",
+    "Analysis_Folder/Chloroquine/Heat_Maps/Clustered/ClusterMR_Heatmap.png",
+    "Analysis_Folder/Chloroquine/Heat_Maps/Clustered/ClusterR_Heatmap.png",
+    "Analysis_Folder/Chloroquine/Heat_Maps/Clustered/ClusterS_Heatmap.png"),
+  height = 500, width = "95%")
+
+#knitr::include_graphics("Analysis_Folder/Chloroquine/Heat_Maps/Clustered/ClusterAll_Heatmap.png")
+
+```
+
+#### **PCOA Plot**
+
+* **Description:** This plot displays the principal coordinates analysis (PCoA) of genetic distances between parasite samples, reducing the genetic data to two dimensions for easier visualization. This shows clusters of genetically similar parasite samples based on the IBS matrix.
+* **Purpose:**  To identify genetic clusters and trends in the dataset by visualizing the genetic diversity of the samples, helping to reveal patterns in the data that could indicate transmission dynamics or population structure.
+The PCoA plot below shows how parasite samples are distributed based on their genetic differences. Each point represents a sample, and samples that are closer together are more genetically similar. This plot highlights clear genetic clusters, with samples from certain regions grouping closely together, suggesting possible transmission links.To identify and visualize groups of samples with high genetic similarity, which can indicate potential transmission clusters or common sources of infection.
+
+The PCOA below is divided into 3 based on drug conditions to show the genetic similarity between samples derived from the IBS matrix. The more similar the samples are similar to each other, the more they form clusters together. we can clearly see a cluster of samples that are sensitive from riverline and non-riverline.
+
+```{r PCoA, echo=FALSE, message=FALSE, warning=FALSE, out.width= "100%"}
+
+slickR(
+  c("Analysis_Folder/Chloroquine/PCoA_Plots/All/PCoA1_PCoA2.png",
+    "Analysis_Folder/Chloroquine/PCoA_Plots/Non_faceted_PCOA_plots/MixedResistant/PCoA1_PCoA2.png",
+    "Analysis_Folder/Chloroquine/PCoA_Plots/Non_faceted_PCOA_plots/Resistant/PCoA1_PCoA2.png",
+    "Analysis_Folder/Chloroquine/PCoA_Plots/Non_faceted_PCOA_plots/Sensitive/PCoA1_PCoA2.png"),
+  height = 500, width = "95%")
+
+#knitr::include_graphics("Analysis_Folder/Chloroquine/PCoA_Plots/All/PCoA1_PCoA2.png")
+
+```
+
+
+
+#### **Neighbor Joining Tree**
+
+* **Description:** This tree represents the genetic relationships between parasite samples, showing how closely related different samples are.
+* **Purpose:** To explore the evolutionary relationships and genetic distances between the samples, identifying possible clusters of closely related parasites and transmission patterns.
+The neighbor-joining tree below shows the genetic distance between parasite samples, with branch lengths indicating the level of dissimilarity. Samples that cluster closely together are more genetically related. Notable clusters include samples from the same region, suggesting localized transmission patterns. The visualization below shows only one distinct cluster which contains sensitive samples from the Riverline and Non-Riverline areas thereby highlighting a strong similarity among the samples.
+```{r NJ, echo=FALSE, message=FALSE, warning=FALSE, out.width= "100%"}
+
+knitr::include_graphics("Analysis_Folder/Chloroquine/NJ_Trees/Neighbor-Joining_TreeA1.png")
+
+```
+
+The visualizations generated from our IBS matrix, including the **Heatmaps**, **PCoA**, and **Neighbor Joining Trees**, all aim to illustrate **genetic diversity**, **relatedness**, and **potential transmission patterns**. Our results clearly show parasite clustering, particularly within the **sensitive samples**, predominantly from locations in the **Sierra Leone**, such as **Riverline** and **Non-Riverline**.
+
+
+#### **Connectedness Maps**
+
+* **Description:** This map visualizes the geographic connectedness of parasite samples across different regions based on genetic similarity. The maps focus on pairs of samples from different locations, filtered to include only those with a high genetic relationship **(75% and above)** meaning samples with IBS greater than or equal to 0.75 . 
+
+
+* **Purpose:** To understand the spatial relationships between parasite samples, highlighting regions with genetically similar parasites and potential transmission routes or common sources of infection.
+The connectedness map below illustrates geographic links between genetically similar parasite samples. Thicker lines between regions indicate higher levels of genetic similarity, suggesting closer epidemiological connections. The pairs are summarized by location pairs, and three different proportions are calculated to provide various insights: 
+
+
+For example in our data we have a total of **18,306/2 = 9,153** pairs and **409** sum of them have an IBS score of 75% and above after filtering out pairs from the same location and duplicate pairs. Say we focus on **Non-Riverline and Nzerekore**, we sum all pairs from these two locations and then sum all pairs with an IBS score of 75% and above. If there are **756** pairs in total from Non-Riverline and Nzerekore, and **19** of them have an IBS score of 75% and above, the proportions would be calculated as follows:
+
+* **All Pairs Proportion:** $( \frac{19}{9,153} \times 100 )$
+
+* **Group Pairs Proportion:** $( \frac{19}{409} \times 100 )$
+
+* **Location Pairs Proportion:** $( \frac{19}{756} \times 100 )$
+
+These proportions provide different insights into the genetic relatedness between locations. We visualize these results by drawing lines between locations on the map, with the thickness and color of the lines representing different proportions of genetic similarity. This approach potentially highlights areas with strong genetic connections.
+
+
+First let's look at the table bellow from which we generate these visuals. The most important columns you should take note of are:
+
+* **pair_location:** This represents the location pairs. 
+
+* **pair_count:** This indicates the total number of pairs for each location pair. From the table, we can see that most of our pairs come from **Nzerekore - Siguiri**, which is expected as these two locations have the highest sample count in our data. 
+
+* **O.75_Pcount:** This shows the total count for pairs with an IBS score ≥75% for each location pair. The highest count came from **Nzerekore - Siguiri** with **227** and mean IBS of **0.776**. However, a count of **44** came from **Non-Riverline - Riverline** with a mean IBS of **0.93** indicating that most of the highly related pairs in our data come from these two locations.
+
+* **Location_Per:** This represents the **Location Percentage**. The highest percentage is observed for **Nzerekore - Siguiri** with **7.83%** and from **Non-Riverline - Riverline** with **7.41%**.
+
+* **GTotal_per:** This represents the **Group Total Percentage**. The highest proportion came from **Nzerekore - Siguiri** with **55.5%**, which makes sense as this location pair have the highest pair count within the 75% IBS score group.
+
+* **ATotal_per:** This represents the **All Total Percentage**. The percentages here are relatively low, indicating that we don’t have a large number of highly related pairs with the 75% threshold in our data.
+
+
+```{r Connectedness Maps, echo=FALSE, message=FALSE, warning=FALSE, out.width="100%"}
+library(pdftools)
+library(readxl)
+library(DT)
+
+## lets save of the paths of our  3 Pdf outputs for the connection maps
+# combined_pdf_files <- c("1.pdf", "2.pdf", "3.pdf")
+
+## Now we combine them into one pdf
+#pdftools::pdf_combine(combined_pdf_files)
+
+# Read the Excel file
+IBS_Table_0.75 <- read_excel("Analysis_Folder/Chloroquine/IBS_ConnectednessMaps/CtdMaps.xlsx")
+
+# Select only the first 10 columns
+IBS_Table_0.75_first10 <- IBS_Table_0.75[, 1:10]
+
+# Display the table with only the first 10 columns
+datatable(IBS_Table_0.75_first10)
+```
+
+In the analysis, **All Total Percentage** represents the proportion of genetic similarities, or connections, between samples across all locations. It is calculated by taking the total number of sample pairs with IBS values above 0.75 (75%) and dividing it by the total number of all possible sample pairs in the dataset. This percentage gives a broad view of how many samples, regardless of their origin, share a high level of genetic similarity. In visualizations, such as connection maps, the All Total Percentage is depicted as a global metric summarizing the overall genetic relatedness between all samples without focusing on specific locations.
+
+The **Group Total Percentage** is determined for each group of samples based on a specific criterion, such as drug resistance status. For instance, to calculate the Group Total Percentage for a specific drug condition like “Resistant,” the total number of sample pairs with IBS values above 0.75 is divided by the total number of possible pairs within that group, in this case "Resistant". This measure provides insights into how genetically similar samples are within a defined group, helping to identify patterns such as whether samples with the same resistance profile are more closely related. On visualizations like bar charts or grouped connection maps, the Group Total Percentage is displayed separately for each group, often with distinct colors or labels, allowing for comparisons across different categories, such as "Resistant," "Sensitive," and "Mixed Resistant."
+
+Lastly, the **Location Percentage** focuses on genetic similarities between samples from specific geographical regions. For each pair of locations, the number of highly similar sample pairs (IBS above 0.75) is divided by the total number of pairs that could be formed between samples from those two locations. This percentage reveals the extent of genetic connectedness between malaria populations in different regions, which is crucial for understanding the spread of traits like drug resistance. In connection maps, Location Percentages are visually represented by the thickness or intensity of the lines between locations. A higher Location Percentage results in a thicker or darker line, indicating stronger genetic links between those areas. This visualization helps to identify clusters of locations that are genetically closer and may indicate regions where malaria control efforts should be concentrated.
+
+
+<iframe src="Analysis_Folder/Chloroquine/IBS_ConnectednessMaps/connectedness_merged.pdf" width="100%" height="700px"></iframe>
+
+
+Next, we examine the connectedness maps generated from the results in the table and plots visualized. The three proportions: **All Total Percentage**, **Group Total Percentage**, and **Location Percentage**, we can conclude the following:
+
+* For **All Total Percentage** most of the percentages lie between **0%** and **3%**, **Nzerekore - Siguiri** being higher than the others.
+* For **Group Total Percentage** the highest percentages fall within **60%** and **10%**, with **Nzerekore - Siguiri** having the highest proportion and all other pairs below 10%.
+* For **Location Percentage** the location pair **Nzerekore - Siguiri** and **Non-Riverline - Riverline** have **above 8%** and the rest all fall below **2%**.
+
+
+As seen in the map, the **Riverline** and **Non-Riverline** locations in Sierra Leone show strong genetic connections, suggesting a high level of transmission within these areas. Additionally, connections between **Guinea** and **Sierra Leone** are also evident, hinting at possible cross-border transmission of malaria parasites.
+
+### **Conclusion**
+
+The analysis of the Genetic Report Cards (GRCs) for **Sierra Leone** and **Guinea** has revealed key insights into the **genetic diversity**, **drug resistance patterns**, and **transmission dynamics** of **Plasmodium falciparum**. The results indicate that:
+
+- The **sensitive strain** is the most prevalent, with **41.33%** of samples showing sensitivity to chloroquine.
+- The **CVMNK** haplotype, associated with chloroquine sensitivity, is dominant across locations.
+- Mutations at **PfCRT** positions **74-76** are widespread but present in less than **50%** of the samples, reinforcing the predominance of chloroquine sensitivity.
+- Genetic clustering and transmission patterns are particularly strong within **Riverline** and **Non-Riverline** areas in Sierra Leone, with connections also visible between **Guinea** and **Sierra Leone**.
+
+These findings underscore the importance of genetic surveillance in malaria control and the need for continued monitoring of drug resistance to inform effective intervention strategies.
+
+
+
+
