@@ -58,4 +58,4 @@ This analysis was conducted using R, with R Markdown utilized to document the st
 6. **Calculate IBS Matrix:** Compute the Identity-By-State (IBS) matrix to assess genetic similarity between samples.
 7. **Generate Connection and Cluster Plots:** After generating the IBS matrix we use it to generate varous visualizations like, Connectedness Maps, Neighbour Joining trees, heatmaps, PCoA scatter plot etc. 
 
-# **Note:** If you want to see full details of analysis including all plots, please use this link: https://github.com/Maherjerry/grc_analysis/blob/master/GRC_Analysis_Manuscript.html to download the HTML file and view from your browser.
+## **Note:** If you want to see full details of analysis including all plots, please use this link: https://github.com/Maherjerry/grc_analysis/blob/master/GRC_Analysis_Manuscript.html to download the raw HTML file and view from your browser.
